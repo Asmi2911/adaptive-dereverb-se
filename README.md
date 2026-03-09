@@ -1,7 +1,27 @@
-# Adaptive Dereverberation Speech Enhancement
+# Adaptive Neural Speech Dereverberation & Enhancement
 
-This codebase implements a project-aligned prototype for **user-controllable, low-latency speech enhancement with adaptive dereverberation using a hybrid DSP-neural pipeline**.
+Hybrid **DSP + Neural Network pipeline** for adaptive speech dereverberation and noise suppression.
 
+This project is part of an **Advanced Project at NYU Tandon School of Engineering**.
+
+**Advisor:** Prof. Ivan Selesnick  
+**Author:** Asmita Sonavane  
+
+---
+
+# Project Overview
+
+Speech recorded in real environments often contains **room reverberation and environmental noise**, which reduces speech clarity and intelligibility.
+
+This project aims to build a **hybrid signal processing + neural network pipeline** that can:
+
+- Simulate realistic reverberant environments
+- Train a neural model for speech enhancement
+- Allow adaptive dereverberation control
+
+The goal is to develop a **research-oriented speech enhancement system** that can later be extended for **real-time speech applications**.
+
+---
 ## What this repo contains
 
 - **Streaming STFT / iSTFT DSP engine**
@@ -14,66 +34,207 @@ This codebase implements a project-aligned prototype for **user-controllable, lo
 - **Real-time microphone demo** with a Tkinter slider
 - **Evaluation script** with SI-SDR and optional PESQ/STOI
 
-## Expected folder structure
+# System Pipeline
 
-You can keep your current layout, but the cleanest structure is:
+The enhancement system combines **classical DSP processing with a neural enhancement model**.
 
-```text
-adaptive_dereverb_se/
-├── config.yaml
-├── requirements.txt
-├── noise_fullband/
-├── datasets_fullband/
-│   ├── clean_fullband/
-│   │   └── vctk_wav48_silence_trimmed/
-│   └── impulse_responses/
-│       └── SLR26/simulated_rirs_48k/smallroom/
-└── src/
 ```
 
-If you currently have both:
+Clean Speech
+│
+▼
+Room Impulse Response (RIR)
+│
+▼
+Reverberant Speech
+│
+▼
+Add Environmental Noise
+│
+▼
+Noisy Reverberant Mixture
+│
+▼
+STFT Feature Extraction
+│
+▼
+CNN Neural Enhancement Model
+│
+▼
+Spectral Masking
+│
+▼
+Inverse STFT
+│
+▼
+Enhanced Speech
 
-- `datasets_fullband/noise_fullband/`
-- `noise_fullband/`
+```
 
-keep **one canonical copy** only. The config currently points to the root-level `noise_fullband/`.
+The model learns to recover cleaner speech from noisy reverberant mixtures.
 
-## Installation
+---
+
+# Model
+
+The neural component uses a **CNN-based spectral enhancement model**.
+
+Key ideas:
+
+- STFT based spectral features
+- CNN layers for feature extraction
+- Spectral mask prediction
+- Reconstruction using inverse STFT
+
+The neural model is trained to map **noisy reverberant speech → enhanced speech**.
+
+---
+
+# Dataset
+
+Training samples are generated **on-the-fly** using the **DNS Challenge datasets**.
+
+Datasets used:
+
+- **VCTK Dataset** — clean speech
+- **DNS Noise Dataset** — environmental noise
+- **SLR26 Simulated RIR Dataset** — room impulse responses
+
+Since the dataset size is **~50GB+**, the datasets are stored **locally and are not included in this repository**.
+
+---
+
+# Training Configuration
+
+Example training setup:
+
+```
+
+Sample Rate: 48000 Hz
+Segment Length: 3 seconds
+Batch Size: 4
+Epochs: 20
+FFT Size: 1024
+Hop Length: 480
+
+````
+
+Training command:
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+python -m src.train --config config.yaml
+````
+
+---
+
+# Training Progress
+
+Training was executed for **20 epochs**.
+
+Log output: <img width="1647" height="550" alt="image" src="https://github.com/user-attachments/assets/a7dacefe-3542-44d2-9020-d9dc38a48ee6" />
+
+```
+Epoch 20: avg_loss=0.3567
+Best Loss: 0.3548
+```
+
+The loss decreased across epochs, indicating that the model is learning the enhancement mapping.
+
+---
+
+# Project Development Phases
+
+**Phase 1 — Dataset Setup**
+Downloaded and structured DNS datasets; integrated VCTK speech, noise datasets, and room impulse responses.
+
+**Phase 2 — Signal Processing Pipeline**
+Implemented STFT/ISTFT processing, reverberation simulation using RIR convolution, and noise injection with controlled SNR.
+
+**Phase 3 — Neural Model Development**
+Implemented a CNN-based speech enhancement network operating on spectral features.
+
+**Phase 4 — Training Pipeline Implementation**
+Developed on-the-fly dataset generation, safe audio loading, and full model training loop.
+
+**Phase 5 — Initial Model Training**
+Ran initial training experiments and verified convergence behaviour.
+
+**Phase 6 — DSP Verification & Evaluation (Current – In Progress)**
+Testing the DSP pipeline, validating enhancement quality, and evaluating model performance on various speech samples.
+
+---
+
+# Current Status
+
+The core codebase and training pipeline are implemented.
+
+However, several steps are still pending:
+
+* Full validation of the **DSP pipeline**
+* Extensive testing on different speech samples
+* Quantitative evaluation using speech metrics
+* Real-time inference experiments
+
+The project is **currently in active development**.
+
+---
+
+# Repository Structure
+
+```
+adaptive-dereverb-se
+│
+├── src
+│   ├── data.py
+│   ├── dsp.py
+│   ├── model.py
+│   ├── train.py
+│   ├── realtime_app.py
+│   ├── infer_file.py
+│   └── utils.py
+│
+├── config.yaml
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# Installation
+
+```bash
+git clone https://github.com/Asmi2911/adaptive-dereverb-se
+cd adaptive-dereverb-se
 pip install -r requirements.txt
 ```
 
-## Train
+---
+
+# Run Training
 
 ```bash
 python -m src.train --config config.yaml
 ```
 
-## Offline inference
+---
+
+# Run Inference
 
 ```bash
-python -m src.infer_file --config config.yaml --input input.wav --output outputs/enhanced.wav --checkpoint checkpoints/best.pt --u 0.6
+python -m src.infer_file --config config.yaml --input sample.wav --output enhanced.wav
 ```
 
-## Real-time demo
+---
 
-```bash
-python -m src.realtime_app --config config.yaml --checkpoint checkpoints/best.pt
+# Author
+
+**Asmita Sonavane**
+M.S. Computer Engineering
+NYU Tandon School of Engineering
+
+Advisor: **Prof. Ivan Selesnick**
+
+---
+
 ```
-
-## Evaluate
-
-```bash
-python -m src.eval_metrics --clean clean.wav --estimate outputs/enhanced.wav
-```
-
-## Notes
-
-- This is a strong research-grade prototype, but real-time stability still depends on your laptop CPU and audio driver settings.
-- Start with **offline inference first**, then try the real-time GUI.
-- If real-time is glitchy, reduce model size or disable `use_deep_filter` in `config.yaml`.
-<img width="1647" height="550" alt="image" src="https://github.com/user-attachments/assets/a7dacefe-3542-44d2-9020-d9dc38a48ee6" />
 
