@@ -1,0 +1,43 @@
+project:
+  sample_rate: 48000
+  segment_seconds: 3.0
+  device: auto
+
+paths:
+  clean_dir: "DNS-Challenge/datasets_fullband/clean_fullband/vctk_wav48_silence_trimmed"
+  noise_dir: "DNS-Challenge/datasets_fullband/noise_fullband"
+  rir_dir: "DNS-Challenge/datasets_fullband/impulse_responses/SLR26/simulated_rirs_48k/smallroom"
+  checkpoints_dir: "checkpoints"
+  outputs_dir: "outputs"
+
+stft:
+  n_fft: 1024
+  win_length: 960
+  hop_length: 480
+  window: hann
+
+model:
+  freq_bins: 513
+  hidden_size: 160
+  num_layers: 2
+  dropout: 0.1
+  deep_filter_taps: 3
+  use_deep_filter: true
+
+train:
+  batch_size: 4
+  num_workers: 0
+  epochs: 20
+  lr: 0.0005
+  weight_decay: 0.00001
+  grad_clip: 5.0
+  snr_db_range: [0, 20]
+  t60_range: [0.15, 0.60]
+  u_range: [0.0, 1.0]
+  checkpoint_every: 1
+
+realtime:
+  block_hops: 1
+  context_seconds: 0.8
+  default_u: 0.5
+  use_model: true

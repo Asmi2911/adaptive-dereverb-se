@@ -1,0 +1,9 @@
+numpy>=1.24
+scipy>=1.10
+soundfile>=0.12
+sounddevice>=0.4
+torch>=2.2
+tqdm>=4.66
+PyYAML>=6.0
+pesq>=0.0.4
+pystoi>=0.4.1

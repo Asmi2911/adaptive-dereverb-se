@@ -1,0 +1,19 @@
+# datasets
+DNS-Challenge/
+datasets_fullband/
+noise_fullband/
+
+# training outputs
+checkpoints/
+outputs/
+
+# python
+__pycache__/
+*.pyc
+
+# env
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
