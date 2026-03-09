@@ -75,3 +75,5 @@ python -m src.eval_metrics --clean clean.wav --estimate outputs/enhanced.wav
 - This is a strong research-grade prototype, but real-time stability still depends on your laptop CPU and audio driver settings.
 - Start with **offline inference first**, then try the real-time GUI.
 - If real-time is glitchy, reduce model size or disable `use_deep_filter` in `config.yaml`.
+<img width="1647" height="550" alt="image" src="https://github.com/user-attachments/assets/a7dacefe-3542-44d2-9020-d9dc38a48ee6" />
+
