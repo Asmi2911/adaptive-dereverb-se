@@ -1,11 +1,7 @@
-# datasets
+# datasets - do not push
 DNS-Challenge/
 datasets_fullband/
 noise_fullband/
-
-# training outputs
-checkpoints/
-outputs/
 
 # python
 __pycache__/
@@ -17,3 +13,15 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# outputs - ignore random outputs
+outputs/*
+
+# keep selected demo outputs
+!outputs/enhanced_u00.wav
+!outputs/enhanced_u05.wav
+!outputs/enhanced_u10.wav
+
+# checkpoints - ignore all except best model
+checkpoints/*
+!checkpoints/best.pt

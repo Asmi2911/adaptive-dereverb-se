@@ -7,3 +7,7 @@ tqdm>=4.66
 PyYAML>=6.0
 pesq>=0.0.4
 pystoi>=0.4.1
+soundfile>=0.12
+gradio>=4.44
+matplotlib>=3.8
+pandas>=2.0
