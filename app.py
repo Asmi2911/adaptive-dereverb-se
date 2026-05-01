@@ -7,6 +7,8 @@ import gradio as gr
 import numpy as np
 import torch
 import soundfile as sf
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from src.dsp import STFTParams, TorchSTFT, apply_complex_mask, apply_deep_filter, hybrid_dsp_enhance, log_mag_features
