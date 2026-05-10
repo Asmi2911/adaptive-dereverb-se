@@ -50,18 +50,27 @@ def plot_spectrogram(wav, title):
     ax.set_title(title)
     ax.set_xlabel("Time")
     ax.set_ylabel("Frequency")
+
     path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
     fig.tight_layout()
     fig.savefig(path)
     plt.close(fig)
+
     return path
 
 
 def enhance_audio(audio_path, u, mode):
     if audio_path is None:
-        raise gr.Error("Please upload a WAV file.")
+        raise gr.Error("Please upload or record a WAV file.")
 
     wav = read_audio(audio_path, sr)
+
+    input_download_path = tempfile.NamedTemporaryFile(
+        suffix="_original_input.wav",
+        delete=False
+    ).name
+    write_audio(input_download_path, wav, sr)
+
     x = torch.from_numpy(wav).float().to(device).unsqueeze(0)
     u_tensor = torch.tensor([float(u)], device=device)
 
@@ -76,21 +85,32 @@ def enhance_audio(audio_path, u, mode):
         else:
             feats = log_mag_features(Y_dsp)
             out = model(feats, u_tensor)
+
             X_hat = apply_complex_mask(Y_dsp, out["mask"])
+
             if config["model"]["use_deep_filter"]:
                 X_hat = X_hat + apply_deep_filter(Y_dsp, out["filter"])
 
-        enhanced = stft.istft(X_hat, length=x.shape[-1]).squeeze(0).cpu().numpy()
+        enhanced = stft.istft(
+            X_hat,
+            length=x.shape[-1]
+        ).squeeze(0).cpu().numpy()
 
     elapsed = time.perf_counter() - start
     duration = len(wav) / sr
     rtf = elapsed / max(duration, 1e-8)
 
-    output_path = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+    output_path = tempfile.NamedTemporaryFile(
+        suffix="_enhanced_output.wav",
+        delete=False
+    ).name
     write_audio(output_path, enhanced, sr)
 
     before_plot = plot_spectrogram(wav, "Input Reverberant/Noisy Speech")
-    after_plot = plot_spectrogram(enhanced, f"Enhanced Speech | u={u:.2f} | {mode}")
+    after_plot = plot_spectrogram(
+        enhanced,
+        f"Enhanced Speech | u={float(u):.2f} | {mode}"
+    )
 
     summary = f"""
 ### Result Summary
@@ -98,7 +118,7 @@ def enhance_audio(audio_path, u, mode):
 | Item | Value |
 |---|---:|
 | Mode | {mode} |
-| Dereverberation control `u` | {u:.2f} |
+| Dereverberation control `u` | {float(u):.2f} |
 | Audio duration | {duration:.2f} sec |
 | Processing time | {elapsed:.3f} sec |
 | Real-time factor | {rtf:.3f} |
@@ -106,18 +126,33 @@ def enhance_audio(audio_path, u, mode):
 Lower RTF is better. RTF < 1 means faster than real time.
 """
 
-    return output_path, before_plot, after_plot, summary
+    return input_download_path, output_path, before_plot, after_plot, summary
 
 
 demo = gr.Interface(
     fn=enhance_audio,
     inputs=[
-        gr.Audio(type="filepath", label="Upload reverberant/noisy WAV"),
-        gr.Slider(0.0, 1.0, value=0.5, step=0.05, label="Dereverberation Strength u"),
-        gr.Radio(["DSP only", "DSP + Neural"], value="DSP + Neural", label="Enhancement Mode"),
+        gr.Audio(
+            sources=["microphone", "upload"],
+            type="filepath",
+            label="Upload or Record Reverberant/Noisy Speech"
+        ),
+        gr.Slider(
+            0.0,
+            1.0,
+            value=0.5,
+            step=0.05,
+            label="Dereverberation Strength u"
+        ),
+        gr.Radio(
+            ["DSP only", "DSP + Neural"],
+            value="DSP + Neural",
+            label="Enhancement Mode"
+        ),
     ],
     outputs=[
-        gr.Audio(type="filepath", label="Enhanced Output"),
+        gr.Audio(type="filepath", label="Original Input Audio - Download"),
+        gr.Audio(type="filepath", label="Enhanced Output - Download"),
         gr.Image(label="Input Spectrogram"),
         gr.Image(label="Enhanced Spectrogram"),
         gr.Markdown(label="Results"),
@@ -127,4 +162,4 @@ demo = gr.Interface(
 )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=7860, show_api=False)
