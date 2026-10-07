@@ -234,7 +234,8 @@ NYU Tandon School of Engineering
 
 Advisor: **Prof. Ivan Selesnick**
 
+**Demo: https://huggingface.co/spaces/asmii29/adaptive-dereverb-se?logs=container**
+
 ---
 
-```
 
